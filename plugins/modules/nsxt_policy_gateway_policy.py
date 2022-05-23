@@ -308,9 +308,13 @@ class NSXTGatewayPolicy(NSXTBaseRealizableResource):
         return gateway_policy_arg_spec
 
     @staticmethod
-    def get_resource_base_url(baseline_args):
-        return GATEWAY_POLICY_URL.format(
-            baseline_args["domain_id"])
+    def get_resource_base_url(baseline_args,federation_role):
+        local_url = GATEWAY_POLICY_URL.format(baseline_args["domain_id"])
+        if federation_role == 'global':
+            # replace /infra with /global-infra
+            return "/global-{}".format(local_url[1:])
+        else:
+            return local_url        
 
     def update_resource_params(self, nsx_resource_params):
         nsx_resource_params.pop('domain_id')

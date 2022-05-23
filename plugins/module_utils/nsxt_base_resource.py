@@ -77,11 +77,12 @@ class NSXTBaseRealizableResource(ABC):
         request_headers = self.module.params['request_headers']
         ca_path = self.module.params['ca_path']
         validate_certs = self.module.params['validate_certs']
+        federation_role = self.module.params['federation_role']
 
         # Each manager has an associated PolicyCommunicator
         self.policy_communicator = PolicyCommunicator.get_instance(
             mgr_hostname, mgr_username, mgr_password, nsx_cert_path,
-            nsx_key_path, request_headers, ca_path, validate_certs)
+            nsx_key_path, request_headers, ca_path, validate_certs, federation_role)
 
         if resource_params is None:
             resource_params = self.module.params
@@ -93,7 +94,7 @@ class NSXTBaseRealizableResource(ABC):
             if self.get_resource_name() in BASE_RESOURCES:
                 self.id = self._get_id_using_attr_name(
                     None, resource_params,
-                    self.get_resource_base_url(self.baseline_args),
+                    self.get_resource_base_url(self.baseline_args,federation_role=federation_role),
                     self.get_spec_identifier(),
                     fail_if_not_found=False)
             else:
@@ -123,7 +124,8 @@ class NSXTBaseRealizableResource(ABC):
             # get existing resource schema
             _, self.existing_resource = self._send_request_to_API(
                 suffix="/" + self.id, ignore_error=False,
-                accepted_error_codes=set([404]))
+                accepted_error_codes=set([404]),
+                federation_role=federation_role)
             self.existing_resource_revision = self.existing_resource[
                 '_revision']
             # As Policy API's PATCH requires all attributes to be filled,
@@ -589,7 +591,8 @@ class NSXTBaseRealizableResource(ABC):
                 # Create a new resource
                 _, resp = self._send_request_to_API(
                     suffix="/" + self.id, method='PATCH',
-                    data=self.nsx_resource_params)
+                    data=self.nsx_resource_params,
+                    federation_role=self.resource_params['federation_role'])
                 if self.do_wait_till_create() and not self._wait_till_create():
                     raise Exception
 
@@ -625,10 +628,12 @@ class NSXTBaseRealizableResource(ABC):
             try:
                 _, patch_resp = self._send_request_to_API(
                     suffix="/"+self.id, method="PATCH",
-                    data=self.nsx_resource_params)
+                    data=self.nsx_resource_params,
+                    federation_role=self.resource_params['federation_role'])
                 # Get the resource again and compare version numbers
                 _, updated_resource_spec = self._send_request_to_API(
-                    suffix="/"+self.id, method="GET")
+                    suffix="/"+self.id, method="GET",
+                    federation_role=self.resource_params['federation_role'])
                 if updated_resource_spec[
                         '_revision'] != self.existing_resource_revision:
                     successful_resource_exec_logs.append({
@@ -678,7 +683,8 @@ class NSXTBaseRealizableResource(ABC):
             })
             return
         try:
-            self._send_request_to_API(suffix="/" + self.id, method='DELETE')
+            self._send_request_to_API(suffix="/" + self.id, method='DELETE',
+                    federation_role=self.resource_params['federation_role'])
             self._wait_till_delete()
             successful_resource_exec_logs.append({
                 "changed": True,
@@ -696,6 +702,7 @@ class NSXTBaseRealizableResource(ABC):
     def _send_request_to_API(self, suffix="", ignore_error=False,
                              method='GET', data=None,
                              resource_base_url=None,
+                             federation_role='local',
                              accepted_error_codes=set()):
         try:
             if not resource_base_url:
@@ -706,7 +713,7 @@ class NSXTBaseRealizableResource(ABC):
                 else:
                     resource_base_url = (self.resource_class.
                                          get_resource_base_url(
-                                             baseline_args=self.baseline_args))
+                                             baseline_args=self.baseline_args,federation_role=federation_role))
             if not suffix:
                 rc, resp = self.policy_communicator.get_all_results(
                     resource_base_url, ignore_errors=ignore_error)
@@ -805,7 +812,8 @@ class NSXTBaseRealizableResource(ABC):
         while True:
             try:
                 self._send_request_to_API(
-                    suffix="/" + self.id, accepted_error_codes=set([404]))
+                    suffix="/" + self.id, accepted_error_codes=set([404]),
+                    federation_role=self.resource_params['federation_role'])
                 time.sleep(10)
             except DuplicateRequestError:
                 self.module.fail_json(msg='Duplicate request')
@@ -820,7 +828,8 @@ class NSXTBaseRealizableResource(ABC):
             count = 0
             while True:
                 rc, resp = self._send_request_to_API(
-                    suffix="/" + self.id, accepted_error_codes=set([404]))
+                    suffix="/" + self.id, accepted_error_codes=set([404]),
+                    federation_role=self.resource_params['federation_role'])
                 if 'state' in resp:
                     if any(resp['state'] in progress_status for progress_status
                             in IN_PROGRESS_STATES):

@@ -100,8 +100,12 @@ class NSXTBFDProfile(NSXTBaseRealizableResource):
         return bfd_profile_arg_spec
 
     @staticmethod
-    def get_resource_base_url(baseline_args=None):
-        return BFD_PROFILE_URL
+    def get_resource_base_url(baseline_args=None,federation_role):
+        if federation_role == 'global':
+        # replace /infra with /global-infra
+            return "/global-{}".format(BFD_PROFILE_URL[1:])
+        else:
+            return BFD_PROFILE_URL
 
 
 if __name__ == '__main__':

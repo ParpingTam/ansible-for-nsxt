@@ -91,7 +91,7 @@ class NSXTIpBlock(NSXTBaseRealizableResource):
         return ip_block_arg_spec
 
     @staticmethod
-    def get_resource_base_url(baseline_args=None):
+    def get_resource_base_url(baseline_args=None,federation_role):
         return IP_BLOCK_URL
 
 

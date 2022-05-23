@@ -134,7 +134,7 @@ class NSXTL2BridgeEpProfile(NSXTBaseRealizableResource):
         return L2BridgeEpProfileSpec
 
     @staticmethod
-    def get_resource_base_url(baseline_args=None):
+    def get_resource_base_url(baseline_args=None,federation_role):
         return L2_BRIDGE_EP_PROFILE_URL.format(
             baseline_args['site_id'], baseline_args['enforcementpoint_id'])
 

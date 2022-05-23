@@ -1421,8 +1421,13 @@ class NSXTTier0(NSXTBaseRealizableResource):
         return tier0_arg_spec
 
     @staticmethod
-    def get_resource_base_url(baseline_args=None):
-        return TIER_0_URL
+    def get_resource_base_url(baseline_args=None,federation_role):
+        local_url = TIER_0_URL
+        if federation_role == 'global':
+            # replace /infra with /global-infra
+            return "/global-{}".format(local_url[1:])
+        else:
+            return local_url
 
     def update_resource_params(self, nsx_resource_params):
         ipv6_profile_paths = []

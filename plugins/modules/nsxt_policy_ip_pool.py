@@ -257,7 +257,7 @@ class NSXTIpPool(NSXTBaseRealizableResource):
         return ip_pool_arg_spec
 
     @staticmethod
-    def get_resource_base_url(baseline_args=None):
+    def get_resource_base_url(baseline_args=None,federation_role):
         return IP_POOL_URL
 
     def update_parent_info(self, parent_info):
@@ -300,7 +300,7 @@ class NSXTIpPool(NSXTBaseRealizableResource):
             return ip_addr_pool_blk_subnet_arg_spec
 
         @staticmethod
-        def get_resource_base_url(parent_info):
+        def get_resource_base_url(parent_info,federation_role):
             return IP_ADDRESS_POOL_SUBNET_URL.format(
                 parent_info["ip_pool_id"]
             )
@@ -368,7 +368,7 @@ class NSXTIpPool(NSXTBaseRealizableResource):
             return ip_addr_pool_static_subnet_arg_spec
 
         @staticmethod
-        def get_resource_base_url(parent_info):
+        def get_resource_base_url(parent_info,federation_role):
             return IP_ADDRESS_POOL_SUBNET_URL.format(
                 parent_info["ip_pool_id"]
             )

@@ -1076,8 +1076,13 @@ class NSXTSegment(NSXTBaseRealizableResource):
         return segment_arg_spec
 
     @staticmethod
-    def get_resource_base_url(baseline_args=None):
-        return SEGMENT_URL
+    def get_resource_base_url(baseline_args=None,federation_role):
+        local_url = SEGMENT_URL
+        if federation_role == 'global':
+            # replace /infra with /global-infra
+            return "/global-{}".format(local_url[1:])
+        else:
+            return local_url    
 
     def update_resource_params(self, nsx_resource_params):
         if self.do_resource_params_have_attr_with_id_or_display_name(
@@ -1269,9 +1274,14 @@ class NSXTSegment(NSXTBaseRealizableResource):
             return segment_port_arg_spec
 
         @staticmethod
-        def get_resource_base_url(parent_info):
+        def get_resource_base_url(parent_info,federation_role):
             segment_id = parent_info.get("segment_id", 'default')
-            return SEGMENT_PORT_URL.format(segment_id)
+            local_url = SEGMENT_PORT_URL.format(segment_id)
+            if federation_role == 'global':
+                # replace /infra with /global-infra
+                return "/global-{}".format(local_url[1:])
+            else:
+                return local_url
 
 
 if __name__ == '__main__':

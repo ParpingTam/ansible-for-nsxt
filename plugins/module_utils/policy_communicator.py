@@ -43,7 +43,7 @@ class PolicyCommunicator:
     @staticmethod
     def get_instance(mgr_hostname, mgr_username=None, mgr_password=None,
                      nsx_cert_path=None, nsx_key_path=None, request_headers={},
-                     ca_path=None, validate_certs=True):
+                     ca_path=None, validate_certs=True, federation_role='local'):
         """
             Returns an instance of PolicyCommunicator associated with
             (mgr_hostname, mgr_username, mgr_password) or
@@ -71,12 +71,12 @@ class PolicyCommunicator:
         if key not in PolicyCommunicator.__instances:
             PolicyCommunicator(key, mgr_hostname, mgr_username, mgr_password,
                                nsx_cert_path, nsx_key_path, request_headers,
-                               ca_path, validate_certs)
+                               ca_path, validate_certs, federation_role)
         return PolicyCommunicator.__instances.get(key)
 
     def __init__(self, key, mgr_hostname, mgr_username, mgr_password,
                  nsx_cert_path, nsx_key_path, request_headers,
-                 ca_path, validate_certs):
+                 ca_path, validate_certs, federation_role):
         if key in PolicyCommunicator.__instances:
             raise Exception("The associated PolicyCommunicator is"
                             " already present! Please use getInstance to"
@@ -97,8 +97,11 @@ class PolicyCommunicator:
 
             self.ca_path = ca_path
             self.validate_certs = validate_certs
-
-            self.policy_url = 'https://{}/policy/api/v1'.format(mgr_hostname)
+            self.federation_role = federation_role
+            if federation_role == 'global':
+                self.policy_url = 'https://{}/global-manager/api/v1'.format(mgr_hostname)
+            else:
+                self.policy_url = 'https://{}/policy/api/v1'.format(mgr_hostname)
             self.active_requests = set()
 
             PolicyCommunicator.__instances[key] = self
@@ -114,7 +117,8 @@ class PolicyCommunicator:
             nsx_cert_path=dict(type='str', required=False),
             nsx_key_path=dict(type='str', required=False),
             request_headers=dict(type='dict'),
-            ca_path=dict(type='str')
+            ca_path=dict(type='str'),
+            federation_role=dict(type='str',required=False, default='local', choices=['local','global'])
         )
 
     def get_all_results(self, url, ignore_errors=False):
