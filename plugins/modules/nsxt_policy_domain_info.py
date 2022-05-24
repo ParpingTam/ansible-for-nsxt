@@ -48,12 +48,12 @@ options:
             - Must be specified if nsx_cert_path is specified
         type: str        
         
-    global_infra:
-        description: Flag set to True when targeting a Global NSX Manager (Federation)
+    federation_role:
+        description: Indicator of NSX Manager role within a federated deployment
         required: false
-        type: bool
-        
-        
+        type: string ( local|global )
+        default: local
+            
     page_size:
         description: if there is a desire to fetch the data in chunks rather than all at
                      once, an integer specifying the maximum number of objects to fetch
@@ -117,7 +117,7 @@ def main():
     argument_spec = PolicyCommunicator.get_vmware_argument_spec()
     # The URL will need to be specified as being non-global or global and we will need a domain
     URL_path_spec = dict(
-        global_infra=dict(type='bool', required=False, default=False)
+        federation_role=dict(type='str', required=False, options=['local', 'global'], default='local')
         )
     '''
     Now add the arguments relating to query field in the URL for this GET method
@@ -149,7 +149,7 @@ def main():
 
     mgr_hostname = module.params['hostname']
     validate_certs = module.params['validate_certs']
-    if module.params['global_infra']:
+    if module.params['federation_role'] == 'global':
         url_path_root = GLOBAL_POLICY_URL
     else:
         url_path_root = LOCAL_POLICY_URL

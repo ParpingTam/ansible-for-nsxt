@@ -29,7 +29,8 @@ description: Returns all certificate information viewable by the user, including
              certificate_ca, or certificate_signed); pem_encoded data; and history of the
              certificate (who created or modified it and when). For additional
              information, include the ?details=true modifier at the end of the request
-             URI.
+             URI. This does not have a differing URL between local and global
+             managers in a federated deployment
 version_added: "2.7"
 author: Rahul Raghuvanshi
 options:
@@ -66,24 +67,24 @@ from ansible_collections.vmware.ansible_for_nsxt.plugins.module_utils.vmware_nsx
 from ansible.module_utils._text import to_native
 
 def main():
-  argument_spec = vmware_argument_spec()
+    argument_spec = vmware_argument_spec()
 
-  module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
 
-  mgr_hostname = module.params['hostname']
-  mgr_username = module.params['username']
-  mgr_password = module.params['password']
-  validate_certs = module.params['validate_certs']
+    mgr_hostname = module.params['hostname']
+    mgr_username = module.params['username']
+    mgr_password = module.params['password']
+    validate_certs = module.params['validate_certs']
 
-  manager_url = 'https://{}/api/v1'.format(mgr_hostname)
+    manager_url = 'https://{}/api/v1'.format(mgr_hostname)
 
-  changed = False
-  try:
-    (rc, resp) = request(manager_url+ '/trust-management/certificates', headers=dict(Accept='application/json'),
-                    url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
-  except Exception as err:
-    module.fail_json(msg='Error accessing transport zone. Error [%s]' % (to_native(err)))
+    changed = False
+    try:
+        (rc, resp) = request(manager_url+ '/trust-management/certificates', headers=dict(Accept='application/json'),
+                        url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
+    except Exception as err:
+        module.fail_json(msg='Error accessing transport zone. Error [%s]' % (to_native(err)))
 
-  module.exit_json(changed=changed, **resp)
+    module.exit_json(changed=changed, **resp)
 if __name__ == '__main__':
-	main()
+    main()

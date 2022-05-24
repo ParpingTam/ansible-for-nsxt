@@ -45,11 +45,12 @@ options:
             - Must be specified if nsx_cert_path is specified
         type: str        
         
-    global_infra:
-        description: Flag set to True when targeting a Global NSX Manager (Federation)
+    federation_role:
+        description: Indicator of NSX Manager role within a federated deployment
         required: false
-        type: bool
-                
+        type: string ( local|global )
+        default: local
+                   
     intent_path:
         description: All of these URLs are specific to a single group and an ID is needed
         required: true
@@ -96,7 +97,7 @@ EXAMPLES = '''
       "username": "{{ username }}"
       "password": "{{ password }}"
       validate_certs: False
-      global_infra: "{{ global_infra }}"
+      federation_role: "{{ federation_role }}"
       intent_path: "{{ item.0 }}"
       enforcement_point_path: "{{ item.1 }}"
     register: group_associations
@@ -119,7 +120,7 @@ def main():
     argument_spec = PolicyCommunicator.get_vmware_argument_spec()
     # The URL will need to be specified as being non-global or global and we will need a domain
     URL_path_spec = dict(
-        global_infra=dict(type='bool', required=False, default=False)
+        federation_role=dict(type='str', required=False, options=['local', 'global'], default='local')
         )
     URL_query_spec = dict(
                         cursor=dict(type='str', required=False ),
@@ -142,7 +143,7 @@ def main():
     mgr_username = module.params['username']
     mgr_password = module.params['password']
     validate_certs = module.params['validate_certs']
-    if module.params['global_infra']:
+    if module.params['federation_role'] == 'global':
         url_path_root = GLOBAL_POLICY_URL
     else:
         url_path_root = LOCAL_POLICY_URL

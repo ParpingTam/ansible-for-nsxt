@@ -47,10 +47,11 @@ options:
             - Must be specified if nsx_cert_path is specified
         type: str        
         
-    global_infra:
-        description: Flag set to True when targeting a Global NSX Manager (Federation)
+    federation_role:
+        description: Indicator of NSX Manager role within a federated deployment
         required: false
-        type: bool
+        type: string ( local|global )
+        default: local
         
     domain_id:
         description: domain id for domain for which deployment maps 
@@ -105,6 +106,7 @@ EXAMPLES = '''
           "password": "{{ password }}"
           validate_certs: False
           domain_id: "{{ nsxt_domain }}"
+          federation_role: global
         register: nsxt_domain_deployment_maps
         delegate_to: 127.0.0.1
 '''
@@ -123,7 +125,7 @@ def main():
     argument_spec = PolicyCommunicator.get_vmware_argument_spec()
     # The URL will need to be specified as being non-global or global and we will need a domain
     URL_path_spec = dict(
-        global_infra=dict(type='bool', required=False, default=False),
+        federation_role=dict(type='str', required=False, options=['local', 'global'], default='local'),
         domain_id=dict(type='str', required=False, default='default')
         )
     '''
@@ -157,7 +159,7 @@ def main():
     mgr_hostname = module.params['hostname']
     validate_certs = module.params['validate_certs']
     domain_id = module.params['domain_id']
-    if module.params['global_infra']:
+    if module.params['federation_role'] == 'global':
         url_path_root = GLOBAL_POLICY_URL
     else:
         url_path_root = LOCAL_POLICY_URL

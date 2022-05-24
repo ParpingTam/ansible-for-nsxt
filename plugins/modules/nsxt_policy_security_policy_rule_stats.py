@@ -45,11 +45,12 @@ options:
             - Must be specified if nsx_cert_path is specified
         type: str        
         
-    global_infra:
-        description: Flag set to True when targeting a Global NSX Manager (Federation)
+    federation_role:
+        description: Indicator of NSX Manager role within a federated deployment
         required: false
-        type: bool
-        
+        type: string ( local|global )
+        default: local
+              
     domain_id:
         description: The domain string value to be used in the query, usually "default"
         required: false
@@ -98,7 +99,7 @@ def main():
     argument_spec = PolicyCommunicator.get_vmware_argument_spec()
     # The URL will need to be specified as being non-global or global and we will need a domain
     URL_path_spec = dict(
-        global_infra=dict(type='bool', required=False, default=False),
+        federation_role=dict(type='str', required=False, options=['local', 'global'], default='local'),
         domain_id=dict(type='str', required=False, default='default'),
         policy_id=dict(type='str', required=True),
         rule_id=dict(type='str', required=True)
@@ -131,7 +132,7 @@ def main():
     domain_id = module.params['domain_id']
     policy_id = module.params['policy_id']
     rule_id = module.params['rule_id']
-    if module.params['global_infra']:
+    if module.params['federation_role'] == 'global':
         infra_string = 'global-infra'
     else:
         infra_string = 'infra'

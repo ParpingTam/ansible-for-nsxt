@@ -46,18 +46,7 @@ options:
               using which the CRUD operations should be performed
             - Must be specified if nsx_cert_path is specified
         type: str        
-        
-    global_infra:
-        description: Flag set to True when targeting a Global NSX Manager (Federation)
-        required: false
-        type: bool
-        
-    domain_id:
-        description: The domain string value to be used in the query, usually "default"
-        required: false
-        type: string
-        default: default
-        
+          
     page_size:
         description: if there is a desire to fetch the data in chunks rather than all at
                      once, an integer specifying the maximum number of objects to fetch

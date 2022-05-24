@@ -137,88 +137,88 @@ def get_certificate_params(args=None):
     return args
 
 def get_certificates(module, manager_url, mgr_username, mgr_password, validate_certs):
-  try:
-    (rc, resp) = request(manager_url+ '/trust-management/certificates', headers=dict(Accept='application/json'),
-                      url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
-  except Exception as err:
-    module.fail_json(msg='Error accessing trust management certificates. Error [%s]' % (to_native(err)))
-  return resp
+    try:
+        (rc, resp) = request(manager_url+ '/trust-management/certificates', headers=dict(Accept='application/json'),
+                          url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
+    except Exception as err:
+        module.fail_json(msg='Error accessing trust management certificates. Error [%s]' % (to_native(err)))
+    return resp
 
 def get_certificate_with_display_name(module, manager_url, mgr_username, mgr_password, validate_certs, display_name):
-  '''
-  result: returns the certificate object with the display name provided
-  '''
-  certificates = get_certificates(module, manager_url, mgr_username, mgr_password, validate_certs)
-  for certificate in certificates['results']:
-     if certificate.__contains__('display_name') and certificate['display_name'] == display_name:
-        return certificate
-  return None
+    '''
+    result: returns the certificate object with the display name provided
+    '''
+    certificates = get_certificates(module, manager_url, mgr_username, mgr_password, validate_certs)
+    for certificate in certificates['results']:
+        if certificate.__contains__('display_name') and certificate['display_name'] == display_name:
+            return certificate
+    return None
 
 def main():
-  argument_spec = dict()
-  argument_spec.update(hostname=dict(type='str', required=True),
-                       username=dict(type='str', required=True),
-                       password=dict(type='str', required=True, no_log=True),
-                       port=dict(type='int', default=443),
-                       validate_certs=dict(type='bool', requried=False, default=True),
-                       display_name=dict(required=True, type='str'),
-                       pem_encoded_file=dict(required=False, type='str', no_log=True), 
-                       private_key_file=dict(required=False, type='str', no_log=True),
-                       passphrase=dict(required=False, type='str', no_log=True),
-                       description=dict(required=False, type='str'),
-                       id=dict(required=False, type='str'),
-                       key_algo=dict(required=False, type='str'),
-                       resource_type=dict(required=False, type='str'),
-                       tags=dict(required=False, type='list'),
-                    state=dict(required=True, choices=['present', 'absent']))
+    argument_spec = dict()
+    argument_spec.update(hostname=dict(type='str', required=True),
+                         username=dict(type='str', required=True),
+                         password=dict(type='str', required=True, no_log=True),
+                         port=dict(type='int', default=443),
+                         validate_certs=dict(type='bool', requried=False, default=True),
+                         display_name=dict(required=True, type='str'),
+                         pem_encoded_file=dict(required=False, type='str', no_log=True), 
+                         private_key_file=dict(required=False, type='str', no_log=True),
+                         passphrase=dict(required=False, type='str', no_log=True),
+                         description=dict(required=False, type='str'),
+                         id=dict(required=False, type='str'),
+                         key_algo=dict(required=False, type='str'),
+                         resource_type=dict(required=False, type='str'),
+                         tags=dict(required=False, type='list'),
+                      state=dict(required=True, choices=['present', 'absent']))
+    '''
+  Core function of the module reponsible for adding and deleting the certificate.
   '''
-  Core function of the module reponsible for adding and deleting the certififcate.
-  '''
 
-  module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
-  certificate_params = get_certificate_params(module.params.copy())
-  state = module.params['state']
-  mgr_hostname = module.params['hostname']
-  mgr_username = module.params['username']
-  mgr_password = module.params['password']
-  validate_certs = module.params['validate_certs']
-  display_name = module.params['display_name']
+    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+    certificate_params = get_certificate_params(module.params.copy())
+    state = module.params['state']
+    mgr_hostname = module.params['hostname']
+    mgr_username = module.params['username']
+    mgr_password = module.params['password']
+    validate_certs = module.params['validate_certs']
+    display_name = module.params['display_name']
 
-  manager_url = 'https://{}/api/v1'.format(mgr_hostname)
+    manager_url = 'https://{}/api/v1'.format(mgr_hostname)
 
-  certificate_with_display_name = get_certificate_with_display_name(module, manager_url, mgr_username, mgr_password, validate_certs, display_name)
+    certificate_with_display_name = get_certificate_with_display_name(module, manager_url, mgr_username, mgr_password, validate_certs, display_name)
 
 
-  if state == 'present':
-    # add the certificate
-    if certificate_with_display_name:
-      module.fail_json(msg="Certificate with display name \'%s\' already exists." % display_name)  
-    try:
-      certificate_params = update_params_with_pem_encoding(certificate_params)
-      headers = dict(Accept="application/json")
-      headers['Content-Type'] = 'application/json'
-      request_data = json.dumps(certificate_params)
-      (rc, resp) = request(manager_url+ '/trust-management/certificates?action=import', data=request_data, headers=headers, method='POST',
-                              url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
-    except Exception as err:
-      module.fail_json(msg="Failed to add certificate.\n Error: [%s].\n Request_body[%s]." % (to_native(err), request_data))
+    if state == 'present':
+        # add the certificate
+        if certificate_with_display_name:
+            module.fail_json(msg="Certificate with display name \'%s\' already exists." % display_name)  
+        try:
+            certificate_params = update_params_with_pem_encoding(certificate_params)
+            headers = dict(Accept="application/json")
+            headers['Content-Type'] = 'application/json'
+            request_data = json.dumps(certificate_params)
+            (rc, resp) = request(manager_url+ '/trust-management/certificates?action=import', data=request_data, headers=headers, method='POST',
+                                    url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
+        except Exception as err:
+            module.fail_json(msg="Failed to add certificate.\n Error: [%s].\n Request_body[%s]." % (to_native(err), request_data))
 
-    time.sleep(5)
-    module.exit_json(changed=True, result=resp, message="certificate created. Response: [%s]" % str(resp))
+        time.sleep(5)
+        module.exit_json(changed=True, result=resp, message="certificate created. Response: [%s]" % str(resp))
 
-  elif state == 'absent': 
-    #Delete the certificate   
-    if not certificate_with_display_name:
-      module.fail_json(msg="Certificate with display name \'%s\' doesn't exists." % display_name)
-    certificate_id = certificate_with_display_name['id']
-    try:
-       (rc, resp) = request(manager_url+ '/trust-management/certificates/' + certificate_id, method='DELETE',
-                            url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
-    except Exception as err:
-      module.fail_json(msg="Failed to delete certificate with display name \'%s\'. Error[%s]." % (display_name, to_native(err)))
+    elif state == 'absent': 
+        #Delete the certificate   
+        if not certificate_with_display_name:
+            module.fail_json(msg="Certificate with display name \'%s\' doesn't exists." % display_name)
+        certificate_id = certificate_with_display_name['id']
+        try:
+            (rc, resp) = request(manager_url+ '/trust-management/certificates/' + certificate_id, method='DELETE',
+                                 url_username=mgr_username, url_password=mgr_password, validate_certs=validate_certs, ignore_errors=True)
+        except Exception as err:
+            module.fail_json(msg="Failed to delete certificate with display name \'%s\'. Error[%s]." % (display_name, to_native(err)))
 
-    time.sleep(5)
-    module.exit_json(changed=True, object_name=certificate_id, message="Certificate with certificate id: %s deleted." % certificate_id)
+        time.sleep(5)
+        module.exit_json(changed=True, object_name=certificate_id, message="Certificate with certificate id: %s deleted." % certificate_id)
 
 
 if __name__ == '__main__':
