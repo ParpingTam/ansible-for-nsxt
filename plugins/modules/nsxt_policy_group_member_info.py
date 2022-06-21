@@ -99,7 +99,8 @@ options:
         type: bool
         default: False
     enforcement_point_path:
-        description: Required for some of the member types ( don't even understand it to be honest )
+        description: Needed for groups on a global manager when a global group is enforced on multiple
+                     local managers.   
 '''
 EXAMPLES = '''
 - name: List Group Members - VMs

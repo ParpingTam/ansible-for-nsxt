@@ -163,7 +163,6 @@ def main():
     # Need to build up a query string
     url_query_string = build_url_query_string( build_url_query_dict(module.params, URL_query_spec.keys() ) )
     manager_url = 'https://{}{}/domains/{}/groups{}'.format(mgr_hostname,url_path_root,domain_id,url_query_string)
-
     changed = False
     '''
     We potentially need to loop to fetch all data the code here will be the same for

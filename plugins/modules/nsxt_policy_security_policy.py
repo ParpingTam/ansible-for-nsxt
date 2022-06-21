@@ -28,10 +28,13 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: nsxt_policy_security_policy
-short_description: Create or Delete a Policy Security Policy
+short_description: Create, Read, Update or Delete a Policy Security Policy
 description:
-    Creates or deletes a Policy Security Policy.
+    Creates, reads, updates or deletes a Policy Security Policy.
     Required attributes include id and display_name.
+    
+    If a call is made with only the display_name or id and a state of "present"
+    the call will be interpreted as a GET and the object data will be returned
 version_added: "2.8"
 author: Gautam Verma
 extends_documentation_fragment:
@@ -48,6 +51,10 @@ options:
         description: The domain id where the Security Policy is realized.
         type: str
         required: true
+    federation_role:
+        description:
+        type: str ( local|global )
+        required: false
     category:
         description:
             - A way to classify a security policy, if needed.
