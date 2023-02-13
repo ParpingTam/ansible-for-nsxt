@@ -47,11 +47,6 @@ options:
             - Must be specified if nsx_cert_path is specified
         type: str        
         
-    global_infra:
-        description: Flag set to True when targeting a Global NSX Manager (Federation)
-        required: false
-        type: bool
-        
     domain_id:
         description: The domain string value to be used in the query, usually "default"
         required: false
